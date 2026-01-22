@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SWOT Analysis - Mobile Friendly</title>
+    <script language="javascript" src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --s-color: #5D5FEF;
+            --w-color: #27AE60;
+            --o-color: #FF0080;
+            --t-color: #F2C94C;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: radial-gradient(#d0d0d0 1px, transparent 1px);
+            background-size: 20px 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative; 
+        }
+
+        /* --- INFO BOX (Responsive) --- */
+        .assignment-info {
+            position: absolute;
+            top: 20px;
+            left: 25px;
+            background: rgba(255,255,255,0.95);
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            z-index: 100;
+            text-align: left;
+            border-left: 5px solid #333;
+            max-width: 300px;
+        }
+
+        .info-item { margin-bottom: 8px; font-size: 0.9rem; color: #555; }
+        .info-label { font-weight: 700; display: block; font-size: 0.75rem; color: #888; text-transform: uppercase; margin-bottom: 2px;}
+        
+        .editable-info {
+            display: block; font-weight: 600; color: #222; font-size: 1rem;
+            padding: 2px 5px; border-radius: 4px; min-width: 150px;
+            border-bottom: 1px dashed #ccc; word-wrap: break-word;
+        }
+        .editable-info:focus { background: #fff; outline: none; border-bottom: 2px solid var(--s-color); }
+        .editable-info[contenteditable="false"] { border-bottom: none; }
+
+        /* --- HEADER --- */
+        .header { 
+            text-align: center; margin-bottom: 20px; margin-top: 20px; 
+            z-index: 5; position: relative; width: 100%; max-width: 1300px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        
+        h1 { font-size: 3rem; font-weight: 800; text-transform: uppercase; letter-spacing: -1px; color: #222; line-height: 1.2;}
+        
+        .instruction { 
+            color: #555; margin-top: 10px; font-size: 1rem; font-weight: 500;
+            background: rgba(255,255,255,0.8); padding: 8px 20px; border-radius: 20px;
+            display: block; transition: all 0.3s;
+        }
+
+        /* Publish Button */
+        .btn-publish {
+            background: #222; color: #fff; border: none; padding: 12px 25px; border-radius: 50px;
+            font-weight: 600; cursor: pointer; position: absolute; right: 10px; top: 10px; 
+            transition: 0.3s; display: flex; align-items: center; gap: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 100; white-space: nowrap;
+        }
+        .btn-publish:hover { background: #444; }
+
+        .badge-readonly {
+            background: #e74c3c; color: white; padding: 8px 20px; border-radius: 20px;
+            font-size: 0.9rem; font-weight: 700; display: none; margin-top: 10px;
+            box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3);
+        }
+
+        /* --- LAYOUT MOBILE FRIENDLY --- */
+        .swot-wrapper {
+            display: flex; justify-content: center; align-items: flex-start;
+            width: 100%; max-width: 1300px; gap: 20px; flex-grow: 1; margin-bottom: 20px;
+        }
+
+        .col {
+            flex: 1; background: rgba(255,255,255,0.95); border-radius: 15px; padding: 20px;
+            display: flex; flex-direction: column; align-items: center; transition: all 0.4s ease;
+            position: relative; min-height: 400px; border-top: 6px solid transparent;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        .col.dimmed { opacity: 0.2; transform: scale(0.95); filter: blur(2px); pointer-events: none; }
+        
+        .col[data-type="s"] { border-color: var(--s-color); }
+        .col[data-type="w"] { border-color: var(--w-color); }
+        .col[data-type="o"] { border-color: var(--o-color); }
+        .col[data-type="t"] { border-color: var(--t-color); }
+
+        .icon-circle {
+            width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 1.5rem; margin-bottom: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+        .col[data-type="s"] .icon-circle { background: var(--s-color); }
+        .col[data-type="w"] .icon-circle { background: var(--w-color); }
+        .col[data-type="o"] .icon-circle { background: var(--o-color); }
+        .col[data-type="t"] .icon-circle { background: var(--t-color); }
+
+        h2 { font-size: 1.3rem; margin-bottom: 5px; text-transform: uppercase; }
+        .subtitle { font-size: 0.75rem; color: #888; font-weight: 600; margin-bottom: 15px; text-transform: uppercase; }
+
+        .text-container { width: 100%; flex-grow: 1; overflow-y: auto; margin-bottom: 15px; }
+        
+        .text-item {
+            margin-bottom: 10px; padding: 10px; background: #fff; border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 0.9rem; color: #444; border-left: 3px solid #eee;
+            word-wrap: break-word; min-height: 40px;
+        }
+        .text-item[contenteditable="true"]:focus { outline: none; border-left-color: #333; background: #fafafa; }
+        .text-item b { font-weight: 800; color: #000; }
+        .text-item i { font-style: italic; color: #333; }
+
+        .btn-add {
+            background: transparent; border: 2px dashed #ccc; color: #888; width: 100%; padding: 10px;
+            border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s;
+        }
+        .btn-add:hover { background: #eee; color: #333; }
+
+        /* --- WHEEL --- */
+        .control-area { position: relative; width: 100%; height: 220px; margin-top: 10px; overflow: hidden; display: flex; justify-content: center; }
+        .wheel {
+            width: 400px; height: 400px; border-radius: 50%; position: relative; cursor: pointer;
+            background: conic-gradient(from 270deg, var(--s-color) 0deg 45deg, var(--w-color) 45deg 90deg, var(--o-color) 90deg 135deg, var(--t-color) 135deg 180deg, #ddd 180deg);
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+            transform-origin: center center;
+        }
+        .click-zone { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; }
+        .zone-s { clip-path: polygon(50% 50%, 0% 50%, 0% 0%); }
+        .zone-w { clip-path: polygon(50% 50%, 0% 0%, 50% 0%); }
+        .zone-o { clip-path: polygon(50% 50%, 50% 0%, 100% 0%); }
+        .zone-t { clip-path: polygon(50% 50%, 100% 0%, 100% 50%); }
+
+        .label { position: absolute; font-size: 2rem; font-weight: 800; color: rgba(255,255,255,0.95); z-index: 20; pointer-events: none; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .lbl-s { top: 35%; left: 16%; } .lbl-w { top: 10%; left: 38%; } .lbl-o { top: 10%; right: 38%; } .lbl-t { top: 35%; right: 16%; }
+
+        .hub {
+            position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 140px; height: 70px; background: #fff;
+            border-top-left-radius: 100px; border-top-right-radius: 100px; z-index: 50; display: flex; align-items: flex-end; justify-content: center;
+            padding-bottom: 15px; box-shadow: 0 -5px 15px rgba(0,0,0,0.15); cursor: pointer; font-weight: 800; font-size: 0.9rem; color: #333;
+        }
+
+        #toast {
+            visibility: hidden; min-width: 250px; background-color: #333; color: #fff;
+            text-align: center; border-radius: 50px; padding: 12px 20px; position: fixed; z-index: 200;
+            left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 0.9rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
+        /* --- MOBILE RESPONSIVE CSS --- */
+        @media (max-width: 900px) {
+            body { padding: 10px; }
+            
+            /* Pindahkan Info ke atas normal flow agar tidak tertutup */
+            .assignment-info { 
+                position: static; 
+                width: 100%; 
+                max-width: 100%; 
+                margin-bottom: 20px; 
+                border-left: none;
+                border-top: 4px solid #333;
+            }
+
+            .header { margin-top: 0; }
+            h1 { font-size: 2rem; }
+            .btn-publish { position: static; margin-bottom: 10px; width: 100%; justify-content: center; }
+
+            /* SWOT jadi 1 kolom ke bawah */
+            .swot-wrapper { flex-direction: column; align-items: stretch; }
+            .col { min-height: auto; }
+
+            /* Kecilkan Roda Kontrol */
+            .wheel { transform: scale(0.7); top: -20px; }
+            .control-area { height: 180px; overflow: hidden; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="assignment-info">
+        <div class="info-item">
+            <span class="info-label">Course Name</span>
+            <span class="editable-info" id="info-course" contenteditable="true">Type Course Name...</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Student Name</span>
+            <span class="editable-info" id="info-student" contenteditable="true">Type Student Name...</span>
+        </div>
+    </div>
+
+    <div class="header">
+        <h1>SWOT Analysis</h1>
+        
+        <button class="btn-publish" id="btn-publish" onclick="generateShareLink()">
+            <span>🔗 COPY & SHARE LINK</span>
+        </button>
+
+        <div class="instruction" id="header-inst">
+            Edit directly. Supports <b>bold</b>. Use wheel to filter.
+        </div>
+        <span class="badge-readonly" id="readonly-badge">👁️ VIEW ONLY MODE</span>
+    </div>
+
+    <div class="swot-wrapper">
+        <div class="col" id="col-s" data-type="s">
+            <div class="icon-circle">✊</div>
+            <h2>Strengths</h2>
+            <div class="subtitle">Internal / Positive</div>
+            <div class="text-container" id="list-s"></div>
+            <button class="btn-add" onclick="addItem('s')">+ Add Item</button>
+        </div>
+
+        <div class="col" id="col-w" data-type="w">
+            <div class="icon-circle">🔗</div>
+            <h2>Weaknesses</h2>
+            <div class="subtitle">Internal / Negative</div>
+            <div class="text-container" id="list-w"></div>
+            <button class="btn-add" onclick="addItem('w')">+ Add Item</button>
+        </div>
+
+        <div class="col" id="col-o" data-type="o">
+            <div class="icon-circle">💡</div>
+            <h2>Opportunities</h2>
+            <div class="subtitle">External / Positive</div>
+            <div class="text-container" id="list-o"></div>
+            <button class="btn-add" onclick="addItem('o')">+ Add Item</button>
+        </div>
+
+        <div class="col" id="col-t" data-type="t">
+            <div class="icon-circle">⚠️</div>
+            <h2>Threats</h2>
+            <div class="subtitle">External / Negative</div>
+            <div class="text-container" id="list-t"></div>
+            <button class="btn-add" onclick="addItem('t')">+ Add Item</button>
+        </div>
+    </div>
+
+    <div class="control-area">
+        <div class="wheel">
+            <span class="label lbl-s">S</span> <span class="label lbl-w">W</span> <span class="label lbl-o">O</span> <span class="label lbl-t">T</span>
+            <div class="click-zone zone-s" onclick="filterView('s')"></div>
+            <div class="click-zone zone-w" onclick="filterView('w')"></div>
+            <div class="click-zone zone-o" onclick="filterView('o')"></div>
+            <div class="click-zone zone-t" onclick="filterView('t')"></div>
+        </div>
+        <div class="hub" onclick="filterView('all')">SHOW ALL</div>
+    </div>
+
+    <div id="toast">✅ Link Copied!</div>
+
+    <script>
+        const STORAGE_KEY = 'swot_compressed_v1'; 
+        
+        const defaultData = {
+            info: { course: "Type Course Name...", student: "Type Student Name..." },
+            swot: {
+                s: ["Strong brand reputation", "High skilled workforce"],
+                w: ["Limited marketing budget", "Outdated website"],
+                o: ["Growing market trends", "Expansion to new regions"],
+                t: ["Competitors lowering prices", "Supply chain costs"]
+            }
+        };
+
+        // --- 1. LOAD DATA ---
+        window.onload = function() {
+            const params = new URLSearchParams(window.location.search);
+            const encodedData = params.get('d'); // 'd' for data (shorter)
+            
+            if (encodedData) {
+                // View Mode from Link
+                try {
+                    // DECOMPRESS DATA (Short Link Logic)
+                    const jsonString = LZString.decompressFromEncodedURIComponent(encodedData);
+                    const parsedData = JSON.parse(jsonString);
+                    renderFullData(parsedData, true); 
+                    activateViewMode();
+                } catch (e) {
+                    console.error("Decompression Error:", e);
+                    renderFullData(defaultData, false);
+                }
+            } else {
+                // Edit Mode Local
+                const savedData = localStorage.getItem(STORAGE_KEY);
+                if (savedData) {
+                    try { renderFullData(JSON.parse(savedData), false); }
+                    catch(e) { renderFullData(defaultData, false); }
+                } else {
+                    renderFullData(defaultData, false);
+                }
+                setupAutoSave();
+            }
+        };
+
+        // --- 2. RENDER ---
+        function renderFullData(fullData, isReadOnly) {
+            document.getElementById('info-course').innerHTML = fullData.info?.course || defaultData.info.course;
+            document.getElementById('info-student').innerHTML = fullData.info?.student || defaultData.info.student;
+            renderSwotColumns(fullData.swot || defaultData.swot, isReadOnly);
+        }
+
+        function renderSwotColumns(swotData, isReadOnly) {
+            ['s', 'w', 'o', 't'].forEach(type => {
+                const container = document.getElementById(`list-${type}`);
+                container.innerHTML = ''; 
+                if (swotData[type] && Array.isArray(swotData[type])) {
+                    swotData[type].forEach(htmlContent => {
+                        createItemElement(container, htmlContent, isReadOnly);
+                    });
+                }
+            });
+        }
+
+        function createItemElement(container, htmlContent, isReadOnly) {
+            const newItem = document.createElement('div');
+            newItem.className = 'text-item';
+            newItem.innerHTML = htmlContent; 
+            newItem.contentEditable = isReadOnly ? "false" : "true";
+            container.appendChild(newItem);
+        }
+
+        // --- 3. SAVE & COMPRESS (SHORT LINK) ---
+        function gatherCurrentData() {
+            return {
+                info: {
+                    course: document.getElementById('info-course').innerHTML,
+                    student: document.getElementById('info-student').innerHTML
+                },
+                swot: {
+                    s: getListItemsHtml('s'),
+                    w: getListItemsHtml('w'),
+                    o: getListItemsHtml('o'),
+                    t: getListItemsHtml('t')
+                }
+            };
+        }
+
+        function saveToLocal() {
+            const currentData = gatherCurrentData();
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(currentData));
+        }
+
+        function generateShareLink() {
+            try {
+                const currentData = gatherCurrentData();
+                const jsonString = JSON.stringify(currentData);
+                
+                // COMPRESS DATA (Magic happens here)
+                const compressed = LZString.compressToEncodedURIComponent(jsonString);
+
+                const baseUrl = window.location.href.split('?')[0];
+                const finalUrl = `${baseUrl}?d=${compressed}`;
+
+                navigator.clipboard.writeText(finalUrl);
+                window.history.pushState({path: finalUrl}, '', finalUrl);
+                
+                // Show toast
+                const toast = document.getElementById("toast");
+                toast.innerText = "✅ Link Copied! (Short & Mobile Ready)";
+                showToast();
+
+            } catch (err) {
+                console.error("Publish failed:", err);
+                alert("Error creating link.");
+            }
+        }
+
+        function getListItemsHtml(type) {
+            const container = document.getElementById(`list-${type}`);
+            const items = container.querySelectorAll('.text-item');
+            let htmlArray = [];
+            items.forEach(item => {
+                if(item.innerText.trim() !== "") { 
+                    htmlArray.push(item.innerHTML);
+                }
+            });
+            return htmlArray;
+        }
+
+        // --- 4. VIEW & UTILS ---
+        function activateViewMode() {
+            document.getElementById('header-inst').innerText = "Interactive View Mode. Use/press the wheel to filter.";
+            document.getElementById('readonly-badge').style.display = 'inline-block';
+            document.getElementById('btn-publish').style.display = 'none';
+            document.getElementById('info-course').contentEditable = "false";
+            document.getElementById('info-student').contentEditable = "false";
+            const btns = document.getElementsByClassName('btn-add');
+            for(let btn of btns) { btn.style.display = 'none'; }
+        }
+
+        function setupAutoSave() {
+            document.querySelectorAll('.text-container, .editable-info').forEach(c => {
+                c.addEventListener('keyup', saveToLocal);
+                c.addEventListener('focusout', saveToLocal);
+            });
+        }
+
+        function addItem(type) {
+            const container = document.getElementById(`list-${type}`);
+            createItemElement(container, "Type here...", false);
+            const newItem = container.lastElementChild;
+            newItem.focus();
+            document.execCommand('selectAll', false, null);
+            newItem.addEventListener('keyup', saveToLocal);
+            newItem.addEventListener('focusout', saveToLocal);
+            saveToLocal();
+        }
+
+        function filterView(type) {
+            const cols = document.querySelectorAll('.col');
+            const hub = document.querySelector('.hub');
+
+            if(type === 'all') {
+                hub.innerText = "SHOW ALL";
+                hub.style.color = "#333";
+            } else {
+                hub.innerText = type.toUpperCase();
+                if(type === 's') hub.style.color = "var(--s-color)";
+                if(type === 'w') hub.style.color = "var(--w-color)";
+                if(type === 'o') hub.style.color = "var(--o-color)";
+                if(type === 't') hub.style.color = "var(--t-color)";
+            }
+
+            cols.forEach(col => {
+                if (type === 'all') {
+                    col.classList.remove('dimmed');
+                    col.style.opacity = "1";
+                    col.style.transform = "scale(1)";
+                } else {
+                    if (col.dataset.type === type) {
+                        col.classList.remove('dimmed');
+                        col.style.opacity = "1";
+                        col.style.transform = "scale(1.02)";
+                    } else {
+                        col.classList.add('dimmed');
+                    }
+                }
+            });
+        }
+
+        function showToast() {
+            var x = document.getElementById("toast");
+            x.className = "show";
+            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+        }
+    </script>
+
+</body>
+</html>
