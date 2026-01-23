@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SWOT Analysis Board</title>
+    <script language="javascript" src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --s-color: #5D5FEF;
+            --w-color: #27AE60;
+            --o-color: #FF0080;
+            --t-color: #F2C94C;
+            --ref-color: #C19A6B;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+            background-size: 24px 24px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 20px;
+        }
+
+        /* --- HEADER SECTION --- */
+        .header-container {
+            width: 100%; max-width: 900px; margin-bottom: 20px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        /* JUDUL UTAMA BISA DIEDIT */
+        .main-title {
+            font-size: 2.5rem; font-weight: 800; color: #222; text-align: center;
+            margin-bottom: 30px; text-transform: uppercase; letter-spacing: -1px; line-height: 1.1;
+            outline: none; border-bottom: 2px solid transparent; transition: 0.2s;
+            cursor: text; min-width: 200px;
+        }
+        .main-title:hover, .main-title:focus { border-bottom-color: #ccc; }
+        
+        .info-group {
+            width: 100%; display: flex; flex-direction: column; gap: 15px; align-items: flex-start; margin-bottom: 25px;
+        }
+
+        .header-row { width: 100%; display: flex; flex-direction: column; }
+        .header-label {
+            font-size: 0.75rem; color: #888; font-weight: 700; letter-spacing: 1px;
+            margin-bottom: 2px; text-transform: uppercase;
+        }
+
+        .editable-input {
+            font-size: 1.2rem; font-weight: 600; color: #333; outline: none;
+            border-bottom: 1px dashed #ccc; transition: 0.2s; width: 100%; padding-bottom: 2px;
+        }
+        .editable-input:focus { border-bottom-color: #555; }
+        .editable-input[contenteditable]:empty:before { content: attr(placeholder); color: #aaa; }
+
+        .instruction-text {
+            text-align: center; color: #666; font-weight: 500; margin-bottom: 25px;
+            font-size: 0.95rem; background: rgba(255,255,255,0.6); padding: 8px 20px; border-radius: 20px;
+        }
+
+        /* --- GRID CONTAINER --- */
+        .dashboard-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+            width: 100%; max-width: 900px; margin-bottom: 40px;
+        }
+
+        /* --- MINI CARDS --- */
+        .mini-card {
+            background: #fff; border-radius: 16px; padding: 25px; cursor: pointer;
+            position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            transition: transform 0.2s, box-shadow 0.2s; border-top: 6px solid #ccc;
+            display: flex; flex-direction: column; min-height: 220px;
+        }
+        .mini-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        .mini-card:active { transform: scale(0.98); }
+
+        .card-s { border-color: var(--s-color); } .card-w { border-color: var(--w-color); }
+        .card-o { border-color: var(--o-color); } .card-t { border-color: var(--t-color); }
+
+        .mini-header { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
+        .mini-icon {
+            width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.1rem; flex-shrink: 0;
+        }
+        .bg-s { background: var(--s-color); } .bg-w { background: var(--w-color); }
+        .bg-o { background: var(--o-color); } .bg-t { background: var(--t-color); }
+
+        .mini-title h3 { font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        .mini-title span { font-size: 0.65rem; color: #999; font-weight: 600; text-transform: uppercase; display: block;}
+
+        .mini-preview {
+            font-size: 0.85rem; color: #555; line-height: 1.5; flex-grow: 1; overflow: hidden;
+            display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; pointer-events: none;
+        }
+        .mini-preview ul, .mini-preview ol { padding-left: 20px; margin-bottom: 5px; }
+        .empty-hint { color: #ccc; font-style: italic; font-weight: 400;}
+
+        /* --- REFERENCES BUTTON --- */
+        .ref-section { width: 100%; max-width: 900px; display: flex; justify-content: center; }
+        .ref-btn {
+            background: #d4b483; color: white; padding: 12px 40px; border-radius: 50px;
+            font-weight: 700; font-size: 1rem; letter-spacing: 1px; border: none; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(212, 180, 131, 0.4); transition: 0.2s; text-transform: uppercase;
+        }
+        .ref-btn:hover { background: #c19a6b; transform: translateY(-2px); }
+
+        /* --- POP UP EDITOR --- */
+        .editor-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95); z-index: 100;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(8px);
+        }
+        .editor-overlay.active { opacity: 1; pointer-events: all; }
+        
+        .editor-card {
+            width: 90%; max-width: 800px; height: 85%; background: #fff; border-radius: 20px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.15); display: flex; flex-direction: column;
+            transform: scale(0.95); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-top: 8px solid #ccc; padding: 30px; position: relative;
+        }
+        .editor-overlay.active .editor-card { transform: scale(1); }
+
+        .close-btn {
+            position: absolute; top: 20px; right: 20px; background: #f0f0f0; border: none; width: 35px; height: 35px;
+            border-radius: 50%; cursor: pointer; font-size: 1rem; color: #555; display: flex; align-items: center; justify-content: center; transition: 0.2s;
+        }
+        .close-btn:hover { background: #ffcccc; color: red; }
+
+        .editor-toolbar {
+            display: flex; gap: 8px; margin-top: 20px; margin-bottom: 10px;
+            border-bottom: 1px solid #eee; padding-bottom: 10px;
+        }
+        .tool-btn {
+            background: #f4f4f4; border: none; padding: 6px 12px; border-radius: 6px;
+            cursor: pointer; font-size: 0.9rem; font-weight: 600; color: #555; transition: 0.2s;
+        }
+        .tool-btn:hover { background: #e0e0e0; color: #000; }
+        
+        .editor-content {
+            flex-grow: 1; overflow-y: auto; font-size: 1rem; line-height: 1.7; color: #333; outline: none; padding-right: 10px;
+        }
+        .editor-content ul, .editor-content ol { padding-left: 25px; margin-bottom: 10px; }
+        .editor-content li { margin-bottom: 5px; }
+        .editor-content[contenteditable]:empty:before { content: attr(placeholder); color: #aaa; }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #ddd; border-radius: 10px; }
+
+        .copy-link-float {
+            position: fixed; top: 20px; right: 20px; background: white; padding: 8px 15px; border-radius: 20px;
+            font-size: 0.8rem; font-weight: 600; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border: 1px solid #eee; z-index: 100;
+        }
+        .copy-link-float:hover { background: #333; color: white; border-color: #333; }
+
+        /* --- READ ONLY MODE STYLES (Hilangkan fitur edit) --- */
+        body.read-only .editor-toolbar { display: none !important; }
+        body.read-only .copy-link-float { display: none !important; }
+        body.read-only .editable-input { border-bottom: none; }
+        body.read-only .main-title { border-bottom: none; pointer-events: none; }
+        /* Tanda bahwa ini View Only */
+        .readonly-badge {
+            display: none; position: fixed; top: 20px; right: 20px;
+            background: #333; color: white; padding: 8px 15px; border-radius: 20px;
+            font-size: 0.8rem; font-weight: 600; pointer-events: none; z-index: 101;
+        }
+        body.read-only .readonly-badge { display: block; }
+
+        @media (max-width: 600px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .main-title { font-size: 2rem; }
+            .editor-card { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <button class="copy-link-float" onclick="generateShareLink()">🔗 Save & Copy Link</button>
+    <div class="readonly-badge">👁️ View Only Mode</div>
+
+    <div class="header-container">
+        <h1 id="project-title" class="main-title" contenteditable="true" placeholder="Enter Project Title">SWOT ANALYSIS DASHBOARD</h1>
+        
+        <div class="info-group">
+            <div class="header-row">
+                <div class="header-label">COURSE</div>
+                <div id="course-name" class="editable-input" contenteditable="true" placeholder="Enter Course Name">EDUC 620</div>
+            </div>
+            <div class="header-row">
+                <div class="header-label">STUDENT</div>
+                <div id="student-name" class="editable-input" contenteditable="true" placeholder="Enter Student Name">Student Name</div>
+            </div>
+        </div>
+
+        <p class="instruction-text">✨ Tap on any box below to expand and edit details.</p>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="mini-card card-s" onclick="openEditor('s')">
+            <div class="mini-header">
+                <div class="mini-icon bg-s">✊</div>
+                <div class="mini-title"><h3>Strengths</h3><span>Internal / Positive</span></div>
+            </div>
+            <div class="mini-preview" id="preview-s"><span class="empty-hint">Click to expand...</span></div>
+        </div>
+        <div class="mini-card card-w" onclick="openEditor('w')">
+            <div class="mini-header">
+                <div class="mini-icon bg-w">🔗</div>
+                <div class="mini-title"><h3>Weaknesses</h3><span>Internal / Negative</span></div>
+            </div>
+            <div class="mini-preview" id="preview-w"><span class="empty-hint">Click to expand...</span></div>
+        </div>
+        <div class="mini-card card-o" onclick="openEditor('o')">
+            <div class="mini-header">
+                <div class="mini-icon bg-o">💡</div>
+                <div class="mini-title"><h3>Opportunities</h3><span>External / Positive</span></div>
+            </div>
+            <div class="mini-preview" id="preview-o"><span class="empty-hint">Click to expand...</span></div>
+        </div>
+        <div class="mini-card card-t" onclick="openEditor('t')">
+            <div class="mini-header">
+                <div class="mini-icon bg-t">⚠️</div>
+                <div class="mini-title"><h3>Threats</h3><span>External / Negative</span></div>
+            </div>
+            <div class="mini-preview" id="preview-t"><span class="empty-hint">Click to expand...</span></div>
+        </div>
+    </div>
+
+    <div class="ref-section">
+        <button class="ref-btn" onclick="openEditor('ref')">📚 References</button>
+    </div>
+
+    <div class="editor-overlay" id="editor-overlay">
+        <div class="editor-card" id="editor-card-style">
+            <button class="close-btn" onclick="closeEditor()">✕</button>
+            
+            <div class="mini-header">
+                <div class="mini-icon" id="editor-icon">?</div>
+                <div class="mini-title"><h2 id="editor-title">TITLE</h2><span id="editor-subtitle">SUBTITLE</span></div>
+            </div>
+
+            <div class="editor-toolbar">
+                <button class="tool-btn" onclick="formatDoc('bold')" title="Bold"><b>B</b></button>
+                <button class="tool-btn" onclick="formatDoc('italic')" title="Italic"><i>I</i></button>
+                <button class="tool-btn" onclick="formatDoc('insertUnorderedList')" title="Bullet List">• List</button>
+                <button class="tool-btn" onclick="formatDoc('insertOrderedList')" title="Numbered List">1. List</button>
+            </div>
+
+            <div class="editor-content" id="main-editor" contenteditable="true" placeholder="Type analysis & citations here..."></div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'swot_pro_final';
+        let currentType = ''; 
+        let isReadOnly = false; // Flag status
+
+        const meta = {
+            s: { color: '#5D5FEF', icon: '✊', title: 'Strengths', sub: 'Internal / Positive' },
+            w: { color: '#27AE60', icon: '🔗', title: 'Weaknesses', sub: 'Internal / Negative' },
+            o: { color: '#FF0080', icon: '💡', title: 'Opportunities', sub: 'External / Positive' },
+            t: { color: '#F2C94C', icon: '⚠️', title: 'Threats', sub: 'External / Negative' },
+            ref: { color: '#C19A6B', icon: '📚', title: 'References', sub: 'Citations & Sources' }
+        };
+
+        window.onload = function() {
+            const params = new URLSearchParams(window.location.search);
+            const encoded = params.get('d');
+            
+            if (encoded) {
+                // JIKA ADA DATA DI URL = VIEW ONLY MODE
+                try { 
+                    const data = JSON.parse(LZString.decompressFromEncodedURIComponent(encoded));
+                    loadData(data);
+                    enableReadOnly(); // Kunci Editing
+                } catch (e) { console.log('Error loading data'); }
+            } else {
+                // MODE EDIT (Lokal)
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if(saved) loadData(JSON.parse(saved));
+            }
+        };
+
+        function enableReadOnly() {
+            isReadOnly = true;
+            document.body.classList.add('read-only');
+            
+            // Disable semua contenteditable
+            document.querySelectorAll('[contenteditable]').forEach(el => {
+                el.contentEditable = "false";
+            });
+            
+            // Ganti text instruksi
+            document.querySelector('.instruction-text').innerText = "✨ Tap on boxes to view details.";
+        }
+
+        function formatDoc(cmd) {
+            if(isReadOnly) return;
+            document.execCommand(cmd, false, null);
+            document.getElementById('main-editor').focus();
+        }
+
+        function loadData(data) {
+            if(!data) return;
+            if(data.title) document.getElementById('project-title').innerText = data.title;
+            if(data.course) document.getElementById('course-name').innerText = data.course;
+            if(data.student) document.getElementById('student-name').innerText = data.student;
+            updatePreview('s', data.s);
+            updatePreview('w', data.w);
+            updatePreview('o', data.o);
+            updatePreview('t', data.t);
+            document.querySelector('.ref-btn').setAttribute('data-full', data.ref || '');
+        }
+
+        function updatePreview(type, content) {
+            const el = document.getElementById(`preview-${type}`);
+            el.setAttribute('data-full', content || '');
+            el.innerHTML = content && content.trim() ? content : '<span class="empty-hint">Click to expand...</span>';
+        }
+
+        function openEditor(type) {
+            currentType = type;
+            const config = meta[type];
+            document.getElementById('editor-title').innerText = config.title;
+            document.getElementById('editor-subtitle').innerText = config.sub;
+            document.getElementById('editor-icon').innerText = config.icon;
+            document.getElementById('editor-icon').style.background = config.color;
+            document.getElementById('editor-card-style').style.borderColor = config.color;
+
+            let content = type === 'ref' ? document.querySelector('.ref-btn').getAttribute('data-full') : document.getElementById(`preview-${type}`).getAttribute('data-full');
+            
+            const editorDiv = document.getElementById('main-editor');
+            editorDiv.innerHTML = content || '';
+            
+            // Pastikan Editor juga dikunci jika mode View Only
+            if (isReadOnly) {
+                editorDiv.contentEditable = "false";
+            } else {
+                editorDiv.contentEditable = "true";
+            }
+
+            document.getElementById('editor-overlay').classList.add('active');
+            
+            if (!isReadOnly) {
+                setTimeout(() => editorDiv.focus(), 100);
+            }
+        }
+
+        function closeEditor() {
+            if(!currentType) return;
+            
+            // Hanya simpan jika BUKAN mode read-only
+            if (!isReadOnly) {
+                const newContent = document.getElementById('main-editor').innerHTML;
+                if(currentType === 'ref') document.querySelector('.ref-btn').setAttribute('data-full', newContent);
+                else updatePreview(currentType, newContent);
+                saveToLocal();
+            }
+            
+            document.getElementById('editor-overlay').classList.remove('active');
+            currentType = '';
+        }
+
+        function getDataObj() {
+            return {
+                title: document.getElementById('project-title').innerText, // Simpan Judul
+                course: document.getElementById('course-name').innerText,
+                student: document.getElementById('student-name').innerText,
+                s: document.getElementById('preview-s').getAttribute('data-full'),
+                w: document.getElementById('preview-w').getAttribute('data-full'),
+                o: document.getElementById('preview-o').getAttribute('data-full'),
+                t: document.getElementById('preview-t').getAttribute('data-full'),
+                ref: document.querySelector('.ref-btn').getAttribute('data-full')
+            };
+        }
+
+        function saveToLocal() { 
+            if(isReadOnly) return; // Jangan save kalau mode view
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(getDataObj())); 
+        }
+
+        // Auto save listener
+        document.getElementById('project-title').addEventListener('keyup', saveToLocal);
+        document.getElementById('course-name').addEventListener('keyup', saveToLocal);
+        document.getElementById('student-name').addEventListener('keyup', saveToLocal);
+
+        function generateShareLink() {
+            if(currentType) closeEditor(); 
+            const str = JSON.stringify(getDataObj());
+            const compressed = LZString.compressToEncodedURIComponent(str);
+            const url = `${window.location.href.split('?')[0]}?d=${compressed}`;
+            
+            navigator.clipboard.writeText(url).then(() => {
+                alert("✅ Link Copied!\n\nThis link is VIEW ONLY (Read Only).\nAnyone opening it cannot edit your work.");
+            });
+        }
+    </script>
+</body>
+</html>
